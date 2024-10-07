@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Sobre - Minha Aplicação{% endblock %}
+
+{% block content %}
+<header class="text-center">
+    <h1 class="text-danger">Interface ETL Estatística</h1>
+    <p>Esta é um sistema de importação de dados em formato CSV para o ETL e depois é gerado gráficos de correlação
+        para inferir analises
+    </p>
+</header>
+
+<section class="text-center mt-5">
+    <h2 class="text-warning">Carregar Planilha</h2>
+    <p>Faça o upload da sua planilha e nós faremos o processo de ETL (Extração, Transformação e Carga)</p>
+
+    <div class="row text-center mt-4">
+        <div class="col-md-4">
+            <h3 class="text-warning">Extração</h3>
+            <p>Processo de extração dos dados da planilha</p>
+        </div>
+        <div class="col-md-4">
+            <h3 class="text-warning">Transformação</h3>
+            <p>Transformação e manipulação dos dados</p>
+        </div>
+        <div class="col-md-4">
+            <h3 class="text-warning">Carga</h3>
+            <p>Carga dos dados no sistema</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

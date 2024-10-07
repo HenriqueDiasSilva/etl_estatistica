@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Importação - Minha Aplicação{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'home' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="file-upload" class="form-label">Adicione os arquivos das bases do INPE e do INMET</label>
+        <input class="form-control" type="file" id="file-upload" name="file" accept=".csv" multiple>
+    </div>
+    <button type="submit" class="btn btn-success">Enviar</button>
+</form>
+{% endblock %}
