@@ -3,12 +3,33 @@
 {% block title %}Importação - Minha Aplicação{% endblock %}
 
 {% block content %}
-<form method="post" action="{% url 'home' %}" enctype="multipart/form-data">
+<form method="post" action="{% url 'home' %}" enctype="multipart/form-data" onsubmit="showSpinner()">
     {% csrf_token %}
     <div class="mb-3">
         <label for="file-upload" class="form-label">Adicione os arquivos das bases do INPE e do INMET</label>
-        <input class="form-control" type="file" id="file-upload" name="file" accept=".csv" multiple>
+        <input class="form-control" type="file" id="file-upload" name="file" accept=".zip" multiple>
     </div>
     <button type="submit" class="btn btn-success">Enviar</button>
 </form>
+
+<div class="d-flex justify-content-center">
+    <div id="spinner" class="spinner-border text-success mt-5" role="status" style="display: none;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<script>
+    function showSpinner() {
+        document.getElementById('spinner').style.display = 'block';
+    }
+</script>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mt-4" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
 {% endblock %}
