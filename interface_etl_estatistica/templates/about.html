@@ -1,41 +1,63 @@
 {% extends 'base.html' %}
 
-{% block title %}Sobre - Minha Aplicação{% endblock %}
+{% block title %}HydroFlame Analytics - Sobre{% endblock %}
 
 {% block content %}
 <header class="text-center">
-    <h1 class="text-danger">A Relação entre Queimadas e Precipitação no Brasil: Uma Análise de Correlações</h1>
-    <p>Esta é um sistema de importação de dados em formato CSV para o ETL e depois é gerado gráficos de correlação
-        para inferir analises
-    </p>
+    <h1 class="text-danger">Relação entre Queimadas e Precipitação no Brasil</h1>
+    <p class="lead text-muted">Uma plataforma para importar, processar e visualizar dados sobre queimadas e precipitação. Com ferramentas de correlação e análise de regressão linear, o sistema oferece a possibilidade de inferir algo.</p>
 </header>
 
-<section class="mt-3">
-    <h2 class="text-warning text-center">Passo a Passo</h2>
-    <ul class="list-group">
-        <li class="list-group-item">Passo 1: Acesse os sites correspondentes para baixar os dados necessários – um arquivo zipado de cada site e sempre referentes ao mesmo ano. Utilize os seguintes links para acessar os dados: 
-            <a href="https://portal.inmet.gov.br/dadoshistoricos" target="_blank">INMET</a> e 
+<section class="mt-5 px-4">
+    <h2 class="text-center">Objetivo do Sistema</h2>
+    <p class="text-center">Analisar as dinâmicas entre queimadas e precipitação para identificar padrões e auxiliar na mitigação de riscos ambientais. Este sistema oferece uma abordagem baseada em dados para entender como essas variáveis interagem.</p>
+</section>
+
+<section class="mt-5 px-4">
+    <h2 class="text-center">Passo a Passo</h2>
+    <ul class="list-group shadow-sm">
+        <li class="list-group-item">
+            <strong>Passo 1:</strong> Baixe o arquivo necessáris da fonte oficial. Você pode acessar os dados no 
             <a href="https://dataserver-coids.inpe.br/queimadas/queimadas/focos/csv/anual/Brasil_todos_sats/" target="_blank">INPE</a>.
         </li>
-        <li class="list-group-item">Passo 2:</li>
-        <li class="list-group-item">A third item</li>
-        <li class="list-group-item">A fourth item</li>
-        <li class="list-group-item">And a fifth one</li>
+        <li class="list-group-item">
+            <strong>Passo 2:</strong> Carregue o arquivo zipado no sistema. O sistema processará automaticamente os dados.
+        </li>
+        <li class="list-group-item">
+            <strong>Passo 3:</strong> O sistema limpa e transforma os dados, ajustando-os para análise.
+        </li>
+        <li class="list-group-item">
+            <strong>Passo 4:</strong> O sistema calcula e exibe a correlação de Pearson e uma regressão linear entre as variáveis.
+        </li>
+        <li class="list-group-item">
+            <strong>Passo 5:</strong> Visualize gráficos e métricas de análise para uma compreensão detalhada das relações entre as variáveis.
+        </li>
     </ul>
+</section>
 
-    <div class="row text-center mt-4">
-        <div class="col-md-4">
+<section class="mt-5 px-4">
+    <div class="row text-center">
+        <div class="col-md-4 mb-3">
             <h3 class="text-warning">Extração</h3>
-            <p>Processo de extração dos dados da planilha</p>
+            <p class="bg-light p-3 border rounded">O sistema extrai dados brutos de um extenso arquivo CSV zipado, consolidando informações dispersas em um só local.</p>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 mb-3">
             <h3 class="text-warning">Transformação</h3>
-            <p>Transformação e manipulação dos dados</p>
+            <p class="bg-light p-3 border rounded">Limpa e organiza os dados, ajustando para análise. Remoção de inconsistências e preparação dos dados são essenciais.</p>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 mb-3">
             <h3 class="text-warning">Carga</h3>
-            <p>Carga dos dados no sistema</p>
+            <p class="bg-light p-3 border rounded">Os dados processados são carregados no sistema para análises futuras, garantindo inferências valiosas.</p>
         </div>
     </div>
 </section>
+
+<section class="mt-3 px-4">
+    <h2 class="text-center">Análise de Correlação e Regressão Linear</h2>
+    <p class="text-center">A correlação de Pearson mede a relação linear entre precipitação e risco de fogo. Já a regressão linear ajuda a prever o risco de fogo baseado em dados históricos de precipitação. Essa análise facilita a compreensão dos fatores climáticos que influenciam a ocorrência de queimadas.</p>
+</section>
+
+<footer class="mt-5 py-2 text-center text-danger">
+    <p>&copy; {{ current_year }} Sistema de Análise de Queimadas e Precipitação - Henrique e Wendhel.</p>
+</footer>
 {% endblock %}
