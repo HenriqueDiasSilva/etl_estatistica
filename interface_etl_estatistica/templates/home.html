@@ -3,20 +3,20 @@
 {% block title %}HydroFlame Analytics - Importação{% endblock %}
 
 {% block content %}
-<div class="text-center">
-
-    
-</div>
+<div class="text-center"></div>
 <form method="post" action="{% url 'home' %}" enctype="multipart/form-data" onsubmit="showSpinner()">
     {% csrf_token %}
     <div class="mb-3">
-        <label for="file-upload" class="form-label">Adicione o arquivo zipado referente ao ano das base do INPE</label>
+        <label for="file-upload" class="form-label">Adicione o arquivo zipado referente ao ano das bases do INPE</label>
         <input class="form-control" type="file" id="file-upload" name="file" accept=".zip">
     </div>
     <button type="submit" class="btn btn-success">Enviar</button>
-        <button type="button" class="btn btn-info text-white" data-bs-toggle="modal" data-bs-target="#infoModal">
-            Explicação dos Itens
-        </button>
+    {% if correlation %}
+    <button type="button" class="btn btn-info text-white" data-bs-toggle="modal" data-bs-target="#infoModal">Explicação dos Itens</button>
+    {% endif %}
+    {% if outliers %}
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#outliersModal">Ver Outliers</button>
+    {% endif %}
 </form>
 
 <div class="d-flex justify-content-center">
@@ -25,40 +25,72 @@
     </div>
 </div>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} mt-4" role="alert">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
-
-{% if total_municipios %}
-    <p class="mt-3"><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
-{% endif %}
-
 {% if correlation %}
+    <h3 class="mt-4">Resultados com Todos os Dados</h3>
+    {% if total_municipios %}
+        <p><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
+    {% endif %}
     <p><strong>Correlação de Pearson:</strong> {{ correlation }}</p>
     <p><strong>Valor-p:</strong> {{ p_value }}</p>
     <p><strong>Coeficiente Angular (Slope):</strong> {{ slope }}</p>
     <p><strong>Intercepto:</strong> {{ intercept }}</p>
     <p><strong>Equação da Reta:</strong> {{ equation }}</p>
-
     <div class="text-center">
-        <h2 class="mt-4">Gráfico de Regressão Linear</h2>
+        <h4 class="mt-4">Gráfico de Regressão Linear (Todos os Dados)</h4>
     </div>
-
     <div class="d-flex justify-content-center align-items-center mt-3 mb-5">
         <img src="data:image/png;base64,{{ regression_plot }}" alt="Gráfico de Regressão Linear" class="img-fluid">
     </div>
 {% endif %}
 
+{% if regression_plot_no_outliers %}
+    <h3 class="mt-4">Resultados sem Outliers</h3>
+    {% if total_municipios_sem_outliers %}
+        <p><strong>Total de Municípios sem Outliers:</strong> {{ total_municipios_sem_outliers }}</p>
+    {% endif %}
+    <p><strong>Equação da Reta:</strong> {{ equation_no_outliers }}</p>
+    <div class="text-center">
+        <h4 class="mt-4">Gráfico de Regressão Linear (Sem Outliers)</h4>
+    </div>
+    <div class="d-flex justify-content-center align-items-center mt-3 mb-5">
+        <img src="data:image/png;base64,{{ regression_plot_no_outliers }}" alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+    </div>
+{% endif %}
 
-<script>
-    function showSpinner() {
-        document.getElementById('spinner').style.display = 'block';
-    }
-</script>
+<div class="modal fade" id="outliersModal" tabindex="-1" aria-labelledby="outliersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="outliersModalLabel">Outliers Identificados</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Total de Municípios com Outliers:</strong> {{ total_municipios_outliers }}</p>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Município</th>
+                            <th>Precipitação</th>
+                            <th>Risco de Fogo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for outlier in outliers %}
+                        <tr>
+                            <td>{{ outlier.municipio }}</td>
+                            <td>{{ outlier.precipitacao }}</td>
+                            <td>{{ outlier.risco_fogo }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -115,4 +147,9 @@
     </div>
 </div>
 
+<script>
+    function showSpinner() {
+        document.getElementById('spinner').style.display = 'block';
+    }
+</script>
 {% endblock %}
