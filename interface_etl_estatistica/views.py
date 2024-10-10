@@ -3,7 +3,7 @@ import zipfile
 import re
 from io import BytesIO
 import unicodedata
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 from sklearn.linear_model import LinearRegression
 from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect
@@ -24,8 +24,12 @@ def remove_outliers(df, column, threshold=3):
     return filtered_df, outliers
 
 def home(request):
+    # Inicializar variáveis no início da função
     correlation, p_value, slope, intercept, regression_plot, equation, total_municipios = None, None, None, None, None, None, None
-    regression_plot_no_outliers, equation_no_outliers = None, None
+    spearman_corr, spearman_p_value = None, None
+    correlation_no_outliers, p_value_no_outliers = None, None
+    spearman_corr_no_outliers, spearman_p_value_no_outliers = None, None
+    slope_no_outliers, intercept_no_outliers, regression_plot_no_outliers, equation_no_outliers = None, None, None, None
     outliers, total_municipios_outliers, total_municipios_sem_outliers = None, None, None
 
     if request.method == 'POST':
@@ -65,8 +69,11 @@ def home(request):
                         total_municipios = averaged_data['municipio'].nunique()
                         averaged_data = averaged_data.replace([np.inf, -np.inf], np.nan).dropna()
 
-                        # Gráfico com todos os dados
+                        # Calcular a correlação de Pearson e Spearman para o conjunto total
                         correlation, p_value = pearsonr(averaged_data['precipitacao'], averaged_data['risco_fogo'])
+                        spearman_corr, spearman_p_value = spearmanr(averaged_data['precipitacao'], averaged_data['risco_fogo'])
+
+                        # Gráfico com todos os dados
                         X = averaged_data['precipitacao'].values.reshape(-1, 1)
                         y = averaged_data['risco_fogo'].values
                         model = LinearRegression()
@@ -89,41 +96,46 @@ def home(request):
                         regression_plot = base64.b64encode(buffer.getvalue()).decode('utf-8')
                         buffer.close()
 
-                        # Remover outliers e calcular novamente
+                        # Remover outliers
                         averaged_data_no_outliers, outliers_precipitacao = remove_outliers(averaged_data, 'precipitacao')
                         averaged_data_no_outliers, outliers_risco_fogo = remove_outliers(averaged_data_no_outliers, 'risco_fogo')
                         outliers = pd.concat([outliers_precipitacao, outliers_risco_fogo]).drop_duplicates()
 
-                        # Calcular o total de municípios entre os outliers
+                        # Calcular o total de municípios entre os outliers e sem outliers
                         total_municipios_outliers = outliers['municipio'].nunique()
-                        # Calcular o total de municípios sem outliers
                         total_municipios_sem_outliers = averaged_data_no_outliers['municipio'].nunique()
 
-                        correlation_no_outliers, p_value_no_outliers = pearsonr(
-                            averaged_data_no_outliers['precipitacao'], averaged_data_no_outliers['risco_fogo']
-                        )
+                        # Verificar se há dados suficientes sem outliers para calcular a regressão
+                        if not averaged_data_no_outliers.empty and len(averaged_data_no_outliers['precipitacao'].unique()) > 1:
+                            # Calcular a correlação de Pearson e Spearman para o conjunto sem outliers
+                            correlation_no_outliers, p_value_no_outliers = pearsonr(
+                                averaged_data_no_outliers['precipitacao'], averaged_data_no_outliers['risco_fogo']
+                            )
+                            spearman_corr_no_outliers, spearman_p_value_no_outliers = spearmanr(
+                                averaged_data_no_outliers['precipitacao'], averaged_data_no_outliers['risco_fogo']
+                            )
 
-                        X_no_outliers = averaged_data_no_outliers['precipitacao'].values.reshape(-1, 1)
-                        y_no_outliers = averaged_data_no_outliers['risco_fogo'].values
-                        model_no_outliers = LinearRegression()
-                        model_no_outliers.fit(X_no_outliers, y_no_outliers)
-                        slope_no_outliers = model_no_outliers.coef_[0]
-                        intercept_no_outliers = model_no_outliers.intercept_
-                        equation_no_outliers = f"y = {slope_no_outliers:.4f}x + {intercept_no_outliers:.4f}"
+                            X_no_outliers = averaged_data_no_outliers['precipitacao'].values.reshape(-1, 1)
+                            y_no_outliers = averaged_data_no_outliers['risco_fogo'].values
+                            model_no_outliers = LinearRegression()
+                            model_no_outliers.fit(X_no_outliers, y_no_outliers)
+                            slope_no_outliers = model_no_outliers.coef_[0]
+                            intercept_no_outliers = model_no_outliers.intercept_
+                            equation_no_outliers = f"y = {slope_no_outliers:.4f}x + {intercept_no_outliers:.4f}"
 
-                        plt.figure()
-                        plt.scatter(averaged_data_no_outliers['precipitacao'], averaged_data_no_outliers['risco_fogo'], color='green', label='Dados sem Outliers')
-                        plt.plot(averaged_data_no_outliers['precipitacao'], model_no_outliers.predict(X_no_outliers), color='orange', label='Linha de Regressão (Sem Outliers)')
-                        plt.xlabel('Precipitação')
-                        plt.ylabel('Risco de Fogo')
-                        plt.title('Regressão Linear entre Precipitação e Risco de Fogo (Sem Outliers)')
-                        plt.legend()
+                            plt.figure()
+                            plt.scatter(averaged_data_no_outliers['precipitacao'], averaged_data_no_outliers['risco_fogo'], color='green', label='Dados sem Outliers')
+                            plt.plot(averaged_data_no_outliers['precipitacao'], model_no_outliers.predict(X_no_outliers), color='orange', label='Linha de Regressão (Sem Outliers)')
+                            plt.xlabel('Precipitação')
+                            plt.ylabel('Risco de Fogo')
+                            plt.title('Regressão Linear entre Precipitação e Risco de Fogo (Sem Outliers)')
+                            plt.legend()
 
-                        buffer_no_outliers = BytesIO()
-                        plt.savefig(buffer_no_outliers, format='png')
-                        buffer_no_outliers.seek(0)
-                        regression_plot_no_outliers = base64.b64encode(buffer_no_outliers.getvalue()).decode('utf-8')
-                        buffer_no_outliers.close()
+                            buffer_no_outliers = BytesIO()
+                            plt.savefig(buffer_no_outliers, format='png')
+                            buffer_no_outliers.seek(0)
+                            regression_plot_no_outliers = base64.b64encode(buffer_no_outliers.getvalue()).decode('utf-8')
+                            buffer_no_outliers.close()
 
                         # Salvar os dados no banco de dados
                         averaged_csv = BytesIO()
@@ -136,21 +148,27 @@ def home(request):
     context = {
         'correlation': correlation,
         'p_value': p_value,
+        'spearman_corr': spearman_corr,
+        'spearman_p_value': spearman_p_value,
         'slope': slope,
         'intercept': intercept,
         'equation': equation,
         'regression_plot': regression_plot,
         'total_municipios': total_municipios,
-        'regression_plot_no_outliers': regression_plot_no_outliers,
+        'correlation_no_outliers': correlation_no_outliers,
+        'p_value_no_outliers': p_value_no_outliers,
+        'spearman_corr_no_outliers': spearman_corr_no_outliers,
+        'spearman_p_value_no_outliers': spearman_p_value_no_outliers,
+        'slope_no_outliers': slope_no_outliers,
+        'intercept_no_outliers': intercept_no_outliers,
         'equation_no_outliers': equation_no_outliers,
+        'regression_plot_no_outliers': regression_plot_no_outliers,
         'outliers': outliers.to_dict(orient='records') if outliers is not None else None,
         'total_municipios_outliers': total_municipios_outliers,
         'total_municipios_sem_outliers': total_municipios_sem_outliers
     }
     
     return render(request, 'home.html', context)
-
-
 
 def about(request):
     return render(request, 'about.html')

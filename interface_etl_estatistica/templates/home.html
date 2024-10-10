@@ -3,59 +3,135 @@
 {% block title %}HydroFlame Analytics - Importação{% endblock %}
 
 {% block content %}
-<div class="text-center"></div>
 <form method="post" action="{% url 'home' %}" enctype="multipart/form-data" onsubmit="showSpinner()">
     {% csrf_token %}
-    <div class="mb-3">
-        <label for="file-upload" class="form-label">Adicione o arquivo zipado referente ao ano das bases do INPE</label>
-        <input class="form-control" type="file" id="file-upload" name="file" accept=".zip">
+    <div class="d-flex justify-content-center mb-5">
+        {% if not correlation %}
+            <img id="imageHeader" src="../static/img/upload.svg" width="650" alt="HydroFlame Analytics Logo" class="img-fluid">
+        {% endif %}
     </div>
-    <button type="submit" class="btn btn-success">Enviar</button>
-    {% if correlation %}
-    <button type="button" class="btn btn-info text-white" data-bs-toggle="modal" data-bs-target="#infoModal">Explicação dos Itens</button>
-    {% endif %}
-    {% if outliers %}
-        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#outliersModal">Ver Outliers</button>
-    {% endif %}
+    <div class="forms">
+        <div class="mb-3" >
+            <label for="file-upload" class="form-label">Adicione o arquivo zipado referente ao ano das bases do INPE</label>
+            <input class="form-control" type="file" id="file-upload" name="file" accept=".zip">
+        </div>
+        <div class="d-flex justify-content-end">
+            {% if correlation %}
+                <button type="button" class="btn btn-info text-white me-2" data-bs-toggle="modal" data-bs-target="#infoModal" style="height: 40px">Explicação dos Itens</button>
+            {% endif %}
+            {% if outliers %}
+                <button type="button" class="btn btn-warning text-white me-2" data-bs-toggle="modal" data-bs-target="#outliersModal">Ver Outliers</button>
+            {% endif %}
+            <button type="submit" class="btn btn-success d-flex justify-content-center align-items-center" style="height: 40px; width: 80px;">
+                <span id="a" style="display: block;">Enviar</span>
+                <div id="spinner" class="spinner-border spinner-border-sm" role="status" style="display: none">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </button>
+        </div>
+    </div>
 </form>
 
-<div class="d-flex justify-content-center">
-    <div id="spinner" class="spinner-border text-success mt-5" role="status" style="display: none;">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
-
 {% if correlation %}
-    <h3 class="mt-4">Resultados com Todos os Dados</h3>
-    {% if total_municipios %}
-        <p><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
-    {% endif %}
-    <p><strong>Correlação de Pearson:</strong> {{ correlation }}</p>
-    <p><strong>Valor-p:</strong> {{ p_value }}</p>
-    <p><strong>Coeficiente Angular (Slope):</strong> {{ slope }}</p>
-    <p><strong>Intercepto:</strong> {{ intercept }}</p>
-    <p><strong>Equação da Reta:</strong> {{ equation }}</p>
-    <div class="text-center">
-        <h4 class="mt-4">Gráfico de Regressão Linear (Todos os Dados)</h4>
-    </div>
-    <div class="d-flex justify-content-center align-items-center mt-3 mb-5">
-        <img src="data:image/png;base64,{{ regression_plot }}" alt="Gráfico de Regressão Linear" class="img-fluid">
-    </div>
+    <ul class="list-group shadow-sm mt-4">
+        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+            <h3>Correlação de Person (Todos os Dados)</h3>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Correlação de Pearson:</strong> {{ correlation }}</p>
+        </li>
+        <li class="list-group-item">
+            <p class="text-break"><strong>Valor-p de Pearson:</strong> {{ p_value }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Coeficiente Angular (Slope):</strong> {{ slope }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Intercepto:</strong> {{ intercept }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Equação da Reta:</strong> {{ equation }}</p>
+        </li>
+        <li class="list-group-item d-flex justify-content-center">
+            <div class="d-flex justify-content-center align-items-center">
+                <img src="data:image/png;base64,{{ regression_plot }}" alt="Gráfico de Regressão Linear" class="img-fluid">
+            </div>
+        </li>
+    </ul>
 {% endif %}
 
-{% if regression_plot_no_outliers %}
-    <h3 class="mt-4">Resultados sem Outliers</h3>
-    {% if total_municipios_sem_outliers %}
-        <p><strong>Total de Municípios sem Outliers:</strong> {{ total_municipios_sem_outliers }}</p>
-    {% endif %}
-    <p><strong>Equação da Reta:</strong> {{ equation_no_outliers }}</p>
-    <div class="text-center">
-        <h4 class="mt-4">Gráfico de Regressão Linear (Sem Outliers)</h4>
-    </div>
-    <div class="d-flex justify-content-center align-items-center mt-3 mb-5">
-        <img src="data:image/png;base64,{{ regression_plot_no_outliers }}" alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
-    </div>
+{% if correlation_no_outliers %}
+    <ul class="list-group shadow-sm mt-4">
+        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+            <h3 class="flex-grow-1 text-center">Correlação de Pearson (Sem Outliers)</h3>
+        </li>
+        
+        <li class="list-group-item">
+            <p><strong>Total de Municípios:</strong> {{ total_municipios_sem_outliers }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Correlação de Pearson:</strong> {{ correlation_no_outliers }}</p>
+        </li>
+        <li class="list-group-item">
+            <p class="text-break"><strong>Valor-p de Pearson:</strong> {{ p_value_no_outliers }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Coeficiente Angular (Slope):</strong> {{ slope_no_outliers }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Intercepto:</strong> {{ intercept_no_outliers }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Equação da Reta:</strong> {{ equation_no_outliers }}</p>
+        </li>
+        <li class="list-group-item d-flex justify-content-center">
+            <div class="d-flex justify-content-center align-items-center">
+                <img src="data:image/png;base64,{{ regression_plot_no_outliers }}" alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+            </div>
+        </li>
+    </ul>
 {% endif %}
+
+{% if spearman_corr %}
+    <ul class="list-group shadow-sm mt-4">
+        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+            <h3 class="flex-grow-1 text-center">Correlação de Spearman (Todos os Dados)</h3>
+        </li>
+        
+        <li class="list-group-item">
+            <p><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Correlação de Spearman:</strong> {{ spearman_corr }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Valor-p de Spearman:</strong> {{ spearman_p_value }}</p>
+        </li>
+    </ul>
+{% endif %}
+
+{% if spearman_corr_no_outliers %}
+    <ul class="list-group shadow-sm mt-4 mb-4">
+        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+            <h3 class="flex-grow-1 text-center">Correlação de Spearman (Sem Outliers)</h3>
+        </li>
+        
+        <li class="list-group-item">
+            <p><strong>Total de Municípios:</strong> {{ total_municipios_sem_outliers }}</p>
+        </li>
+        <li class="list-group-item">
+            <p><strong>Correlação de Spearman:</strong> {{ spearman_corr_no_outliers }}</p>
+        </li>
+        <li class="list-group-item">
+            <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value_no_outliers }}</p>
+        </li>
+    </ul>
+{% endif %}
+
+<div class="mb-4">&nbsp</div>
 
 <div class="modal fade" id="outliersModal" tabindex="-1" aria-labelledby="outliersModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -109,6 +185,15 @@
                         <li><strong>Entre ±0,5 e ±1:</strong> Correlação moderada a forte, dependendo da proximidade de 1 ou -1.</li>
                     </ul>
                 </p>
+                <p><strong>Correlação de Spearman:</strong> Mede a força e a direção de uma relação monótona entre duas variáveis. É baseada nos rankings dos dados, o que a torna ideal para relações não lineares. Valores variam entre -1 e 1:
+                    <ul>
+                        <li><strong>1:</strong> Correlação monótona positiva perfeita, indicando que à medida que uma variável aumenta, a outra também aumenta, mas não necessariamente de forma linear.</li>
+                        <li><strong>-1:</strong> Correlação monótona negativa perfeita, indicando que à medida que uma variável aumenta, a outra diminui, mas não de forma linear.</li>
+                        <li><strong>0:</strong> Nenhuma correlação monótona, sugerindo que as variáveis não têm uma relação clara de ordem.</li>
+                        <li><strong>Entre 0 e ±0,5:</strong> Correlação fraca. Quanto mais próximo de 0, menor a força da relação monótona.</li>
+                        <li><strong>Entre ±0,5 e ±1:</strong> Correlação moderada a forte, dependendo da proximidade de 1 ou -1.</li>
+                    </ul>
+                </p>
                 <p><strong>Valor-p:</strong> Avalia a significância estatística da correlação observada. Valores comuns para interpretar significância são:
                     <ul>
                         <li><strong>Valor-p &lt; 0,05:</strong> Indica que a correlação observada é estatisticamente significativa. Há uma baixa probabilidade de que a correlação seja devido ao acaso.</li>
@@ -150,6 +235,8 @@
 <script>
     function showSpinner() {
         document.getElementById('spinner').style.display = 'block';
+        document.getElementById('a').style.display = 'none';
     }
 </script>
+
 {% endblock %}
