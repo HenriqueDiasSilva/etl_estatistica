@@ -3,135 +3,294 @@
 {% block title %}HydroFlame Analytics - Importação{% endblock %}
 
 {% block content %}
-<form method="post" action="{% url 'home' %}" enctype="multipart/form-data" onsubmit="showSpinner()">
-    {% csrf_token %}
-    <div class="d-flex justify-content-center mb-5">
-        {% if not correlation %}
-            <img id="imageHeader" src="../static/img/upload.svg" width="650" alt="HydroFlame Analytics Logo" class="img-fluid">
-        {% endif %}
-    </div>
-    <div class="forms">
-        <div class="mb-3" >
-            <label for="file-upload" class="form-label">Adicione o arquivo zipado referente ao ano das bases do INPE</label>
-            <input class="form-control" type="file" id="file-upload" name="file" accept=".zip">
+<div>
+    <form class="row align-items-center" method="post" action="{% url 'home' %}" enctype="multipart/form-data"
+        onsubmit="showSpinner()">
+        {% csrf_token %}
+        <div class="d-flex col-6 align-items-center justify-content-center">
+            <img id="imageHeader" src="../static/img/upload.svg" width="400" alt="HydroFlame Analytics Logo"
+                class="img-fluid">
         </div>
-        <div class="d-flex justify-content-end">
-            {% if correlation %}
-                <button type="button" class="btn btn-info text-white me-2" data-bs-toggle="modal" data-bs-target="#infoModal" style="height: 40px">Explicação dos Itens</button>
-            {% endif %}
-            {% if outliers %}
-                <button type="button" class="btn btn-warning text-white me-2" data-bs-toggle="modal" data-bs-target="#outliersModal">Ver Outliers</button>
-            {% endif %}
-            <button type="submit" class="btn btn-success d-flex justify-content-center align-items-center" style="height: 40px; width: 80px;">
-                <span id="a" style="display: block;">Enviar</span>
-                <div id="spinner" class="spinner-border spinner-border-sm" role="status" style="display: none">
-                    <span class="visually-hidden">Loading...</span>
+        <div class="forms col-6 justify-content-center">
+            <div class="mb-3">
+                <label for="file-upload" class="form-label">Adicione o arquivo zipado referente ao ano das bases do
+                    INPE</label>
+                <div class="d-flex align-items-center">
+                    <input class="form-control" type="file" id="file-upload" name="file" accept=".zip"
+                        style="flex-grow: 1;">
+                    <button type="submit" class="btn btn-success ms-2 d-flex justify-content-center align-items-center"
+                        style="height: 40px; width: 80px;">
+                        <span id="a" style="display: block;">Enviar</span>
+                        <div id="spinner" class="spinner-border spinner-border-sm" role="status" style="display: none">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
                 </div>
-            </button>
-        </div>
-    </div>
-</form>
+            </div>
+    </form>
+</div>
+
 
 {% if correlation %}
-    <ul class="list-group shadow-sm mt-4">
-        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
-            <h3>Correlação de Person (Todos os Dados)</h3>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Correlação de Pearson:</strong> {{ correlation }}</p>
-        </li>
-        <li class="list-group-item">
-            <p class="text-break"><strong>Valor-p de Pearson:</strong> {{ p_value }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Coeficiente Angular (Slope):</strong> {{ slope }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Intercepto:</strong> {{ intercept }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Equação da Reta:</strong> {{ equation }}</p>
-        </li>
-        <li class="list-group-item d-flex justify-content-center">
-            <div class="d-flex justify-content-center align-items-center">
-                <img src="data:image/png;base64,{{ regression_plot }}" alt="Gráfico de Regressão Linear" class="img-fluid">
+<section class="row mt-3 py-4 border-top">
+    <h2 class="text-center">RESULTADOS</h2>
+    <div class="mt-3">
+        <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('pearson_all')"
+            style="height: 40px">
+            Pearson (Todos os dados)
+        </button>
+
+        <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('pearson_no_outliers')"
+            style="height: 40px">
+            Pearson (Sem Outliers)
+        </button>
+
+        <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('spearman_all')"
+            style="height: 40px">
+            Spearman (Todos os dados)
+        </button>
+
+        <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('spearman_no_outliers')"
+            style="height: 40px">
+            Spearman (Sem Outliers)
+        </button>
+
+        <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('both_all')"
+            style="height: 40px">
+            Ambos (Todos os dados)
+        </button>
+
+        <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('both_no_outliers')"
+            style="height: 40px">
+            Ambos (Sem Outliers)
+        </button>
+
+        <button type="button" class="btn btn-info text-white mt-2 me-2" data-bs-toggle="modal"
+            data-bs-target="#infoModal" style="height: 40px">Explicação dos Itens
+        </button>
+
+        <button type="button" class="btn btn-warning text-white mt-2 me-2" data-bs-toggle="modal"
+            data-bs-target="#outliersModal">Ver Outliers</button>
+    </div>
+    </div>
+
+    <div id="pearson_all" class="data-section" style="display: none;">
+        {% if correlation %}
+        <ul class="list-group shadow-sm mt-4">
+            <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                <h3>Correlação de Person (Todos os Dados)</h3>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Correlação de Pearson:</strong> {{ correlation }}</p>
+            </li>
+            <li class="list-group-item">
+                <p class="text-break"><strong>Valor-p de Pearson:</strong> {{ p_value }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Coeficiente Angular (Slope):</strong> {{ slope }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Intercepto:</strong> {{ intercept }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Equação da Reta:</strong> {{ equation }}</p>
+            </li>
+            <li class="list-group-item d-flex justify-content-center">
+                <div class="d-flex justify-content-center align-items-center">
+                    <img src="data:image/png;base64,{{ regression_plot }}" alt="Gráfico de Regressão Linear"
+                        class="img-fluid">
+                </div>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+
+    <div id="pearson_no_outliers" class="data-section" style="display: none;">
+        {% if correlation_no_outliers %}
+        <ul class="list-group shadow-sm mt-4">
+            <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                <h3 class="flex-grow-1 text-center">Correlação de Pearson (Sem Outliers)</h3>
+            </li>
+
+            <li class="list-group-item">
+                <p><strong>Total de Municípios:</strong> {{ total_municipios_sem_outliers }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Correlação de Pearson:</strong> {{ correlation_no_outliers }}</p>
+            </li>
+            <li class="list-group-item">
+                <p class="text-break"><strong>Valor-p de Pearson:</strong> {{ p_value_no_outliers }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Coeficiente Angular (Slope):</strong> {{ slope_no_outliers }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Intercepto:</strong> {{ intercept_no_outliers }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Equação da Reta:</strong> {{ equation_no_outliers }}</p>
+            </li>
+            <li class="list-group-item d-flex justify-content-center">
+                <div class="d-flex justify-content-center align-items-center">
+                    <img src="data:image/png;base64,{{ regression_plot_no_outliers }}"
+                        alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+                </div>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+
+    <div id="spearman_all" class="data-section" style="display: none;">
+        {% if spearman_corr %}
+        <ul class="list-group shadow-sm mt-4">
+            <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                <h3 class="flex-grow-1 text-center">Correlação de Spearman (Todos os Dados)</h3>
+            </li>
+
+            <li class="list-group-item">
+                <p><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Correlação de Spearman:</strong> {{ spearman_corr }}</p>
+            </li>
+            <li class="list-group-item">
+                <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Equação da Reta:</strong> {{ spearman_equation_all }}</p>
+            </li>
+            <li class="list-group-item d-flex justify-content-center">
+                <div class="d-flex justify-content-center align-items-center">
+                    <img src="data:image/png;base64,{{ spearman_regression_plot_all }}"
+                        alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+                </div>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+
+    <div id="spearman_no_outliers" class="data-section" style="display: none;">
+        {% if spearman_corr_no_outliers %}
+        <ul class="list-group shadow-sm mt-4 mb-4">
+            <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                <h3 class="flex-grow-1 text-center">Correlação de Spearman (Sem Outliers)</h3>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Total de Municípios:</strong> {{ total_municipios_sem_outliers }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Correlação de Spearman:</strong> {{ spearman_corr_no_outliers }}</p>
+            </li>
+            <li class="list-group-item">
+                <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value_no_outliers }}</p>
+            </li>
+            <li class="list-group-item">
+                <p><strong>Equação da Reta:</strong> {{ spearman_equation_no_outliers }}</p>
+            </li>
+            <li class="list-group-item d-flex justify-content-center">
+                <div class="d-flex justify-content-center align-items-center">
+                    <img src="data:image/png;base64,{{ spearman_regression_plot_no_outliers }}"
+                        alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+                </div>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+
+    <div id="both_all" class="data-section" style="display: none;">
+        <div class="row">
+            <div class="col-6">
+                {% if correlation %}
+                <ul class="list-group shadow-sm mt-4">
+                    <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                        <h3>Correlação de Person (Todos os Dados)</h3>
+                    </li>
+                    <li class="list-group-item">
+                        <p><strong>Correlação de Pearson:</strong> {{ correlation }}</p>
+                    </li>
+                    <li class="list-group-item">
+                        <p class="text-break"><strong>Valor-p de Pearson:</strong> {{ p_value }}</p>
+                    </li>
+                    <li class="list-group-item">
+                        <p><strong>Equação da Reta:</strong> {{ equation }}</p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-center">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <img src="data:image/png;base64,{{ regression_plot }}" alt="Gráfico de Regressão Linear"
+                                class="img-fluid">
+                        </div>
+                    </li>
+                </ul>
+                {% endif %}
             </div>
-        </li>
-    </ul>
-{% endif %}
-
-{% if correlation_no_outliers %}
-    <ul class="list-group shadow-sm mt-4">
-        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
-            <h3 class="flex-grow-1 text-center">Correlação de Pearson (Sem Outliers)</h3>
-        </li>
-        
-        <li class="list-group-item">
-            <p><strong>Total de Municípios:</strong> {{ total_municipios_sem_outliers }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Correlação de Pearson:</strong> {{ correlation_no_outliers }}</p>
-        </li>
-        <li class="list-group-item">
-            <p class="text-break"><strong>Valor-p de Pearson:</strong> {{ p_value_no_outliers }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Coeficiente Angular (Slope):</strong> {{ slope_no_outliers }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Intercepto:</strong> {{ intercept_no_outliers }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Equação da Reta:</strong> {{ equation_no_outliers }}</p>
-        </li>
-        <li class="list-group-item d-flex justify-content-center">
-            <div class="d-flex justify-content-center align-items-center">
-                <img src="data:image/png;base64,{{ regression_plot_no_outliers }}" alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+            <div class="col-6">
+                {% if spearman_corr %}
+                <ul class="list-group shadow-sm mt-4">
+                    <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                        <h3 class="flex-grow-1 text-center">Correlação de Spearman (Todos os Dados)</h3>
+                    </li>
+                    <li class="list-group-item">
+                        <p><strong>Correlação de Spearman:</strong> {{ spearman_corr }}</p>
+                    </li>
+                    <li class="list-group-item">
+                        <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value }}</p>
+                    </li>
+                </ul>
+                {% endif %}
             </div>
-        </li>
-    </ul>
-{% endif %}
+        </div>
 
-{% if spearman_corr %}
-    <ul class="list-group shadow-sm mt-4">
-        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
-            <h3 class="flex-grow-1 text-center">Correlação de Spearman (Todos os Dados)</h3>
-        </li>
-        
-        <li class="list-group-item">
-            <p><strong>Total de Municípios:</strong> {{ total_municipios }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Correlação de Spearman:</strong> {{ spearman_corr }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Valor-p de Spearman:</strong> {{ spearman_p_value }}</p>
-        </li>
-    </ul>
-{% endif %}
+    </div>
 
-{% if spearman_corr_no_outliers %}
-    <ul class="list-group shadow-sm mt-4 mb-4">
-        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
-            <h3 class="flex-grow-1 text-center">Correlação de Spearman (Sem Outliers)</h3>
-        </li>
-        
-        <li class="list-group-item">
-            <p><strong>Total de Municípios:</strong> {{ total_municipios_sem_outliers }}</p>
-        </li>
-        <li class="list-group-item">
-            <p><strong>Correlação de Spearman:</strong> {{ spearman_corr_no_outliers }}</p>
-        </li>
-        <li class="list-group-item">
-            <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value_no_outliers }}</p>
-        </li>
-    </ul>
-{% endif %}
+    <div id="both_no_outliers" class="data-section" style="display: none;">
+        <div class="row">
+            <div class="col-6">
+                {% if correlation_no_outliers %}
+                <ul class="list-group shadow-sm mt-4">
+                    <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                        <h3 class="flex-grow-1 text-center">Correlação de Pearson (Sem Outliers)</h3>
+                    </li>
+                    <li class="list-group-item">
+                        <p><strong>Correlação de Pearson:</strong> {{ correlation_no_outliers }}</p>
+                    </li>
+                    <li class="list-group-item">
+                        <p class="text-break"><strong>Valor-p de Pearson:</strong> {{ p_value_no_outliers }}</p>
+                    </li>
+                    <li class="list-group-item">
+                        <p><strong>Equação da Reta:</strong> {{ equation_no_outliers }}</p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-center">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <img src="data:image/png;base64,{{ regression_plot_no_outliers }}"
+                                alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+                        </div>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
+            <div class="col-6">
+                {% if spearman_corr_no_outliers %}
+                <ul class="list-group shadow-sm mt-4 mb-4">
+                    <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                        <h3 class="flex-grow-1 text-center">Correlação de Spearman (Sem Outliers)</h3>
+                    </li>
+                    <li class="list-group-item">
+                        <p><strong>Correlação de Spearman:</strong> {{ spearman_corr_no_outliers }}</p>
+                    </li>
+                    <li class="list-group-item">
+                        <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value_no_outliers }}
+                        </p>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
 
-<div class="mb-4">&nbsp</div>
+    </div>
+</section>
+{% endif %}
 
 <div class="modal fade" id="outliersModal" tabindex="-1" aria-labelledby="outliersModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -176,53 +335,77 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Correlação de Pearson:</strong> Mede a força e a direção de uma relação linear entre duas variáveis. Valores de correlação variam entre -1 e 1:
-                    <ul>
-                        <li><strong>1:</strong> Correlação positiva perfeita, indicando que à medida que uma variável aumenta, a outra também aumenta proporcionalmente.</li>
-                        <li><strong>-1:</strong> Correlação negativa perfeita, indicando que à medida que uma variável aumenta, a outra diminui proporcionalmente.</li>
-                        <li><strong>0:</strong> Nenhuma correlação linear, sugerindo que as variáveis não possuem uma relação linear aparente.</li>
-                        <li><strong>Entre 0 e ±0,5:</strong> Correlação fraca. Quanto mais próximo de 0, menor a força da relação linear.</li>
-                        <li><strong>Entre ±0,5 e ±1:</strong> Correlação moderada a forte, dependendo da proximidade de 1 ou -1.</li>
-                    </ul>
+                <p><strong>Correlação de Pearson:</strong> Mede a força e a direção de uma relação linear entre duas
+                    variáveis. Valores de correlação variam entre -1 e 1:
+                <ul>
+                    <li><strong>1:</strong> Correlação positiva perfeita, indicando que à medida que uma variável
+                        aumenta, a outra também aumenta proporcionalmente.</li>
+                    <li><strong>-1:</strong> Correlação negativa perfeita, indicando que à medida que uma variável
+                        aumenta, a outra diminui proporcionalmente.</li>
+                    <li><strong>0:</strong> Nenhuma correlação linear, sugerindo que as variáveis não possuem uma
+                        relação linear aparente.</li>
+                    <li><strong>Entre 0 e ±0,5:</strong> Correlação fraca. Quanto mais próximo de 0, menor a força da
+                        relação linear.</li>
+                    <li><strong>Entre ±0,5 e ±1:</strong> Correlação moderada a forte, dependendo da proximidade de 1 ou
+                        -1.</li>
+                </ul>
                 </p>
-                <p><strong>Correlação de Spearman:</strong> Mede a força e a direção de uma relação monótona entre duas variáveis. É baseada nos rankings dos dados, o que a torna ideal para relações não lineares. Valores variam entre -1 e 1:
-                    <ul>
-                        <li><strong>1:</strong> Correlação monótona positiva perfeita, indicando que à medida que uma variável aumenta, a outra também aumenta, mas não necessariamente de forma linear.</li>
-                        <li><strong>-1:</strong> Correlação monótona negativa perfeita, indicando que à medida que uma variável aumenta, a outra diminui, mas não de forma linear.</li>
-                        <li><strong>0:</strong> Nenhuma correlação monótona, sugerindo que as variáveis não têm uma relação clara de ordem.</li>
-                        <li><strong>Entre 0 e ±0,5:</strong> Correlação fraca. Quanto mais próximo de 0, menor a força da relação monótona.</li>
-                        <li><strong>Entre ±0,5 e ±1:</strong> Correlação moderada a forte, dependendo da proximidade de 1 ou -1.</li>
-                    </ul>
+                <p><strong>Correlação de Spearman:</strong> Mede a força e a direção de uma relação monótona entre duas
+                    variáveis. É baseada nos rankings dos dados, o que a torna ideal para relações não lineares. Valores
+                    variam entre -1 e 1:
+                <ul>
+                    <li><strong>1:</strong> Correlação monótona positiva perfeita, indicando que à medida que uma
+                        variável aumenta, a outra também aumenta, mas não necessariamente de forma linear.</li>
+                    <li><strong>-1:</strong> Correlação monótona negativa perfeita, indicando que à medida que uma
+                        variável aumenta, a outra diminui, mas não de forma linear.</li>
+                    <li><strong>0:</strong> Nenhuma correlação monótona, sugerindo que as variáveis não têm uma relação
+                        clara de ordem.</li>
+                    <li><strong>Entre 0 e ±0,5:</strong> Correlação fraca. Quanto mais próximo de 0, menor a força da
+                        relação monótona.</li>
+                    <li><strong>Entre ±0,5 e ±1:</strong> Correlação moderada a forte, dependendo da proximidade de 1 ou
+                        -1.</li>
+                </ul>
                 </p>
-                <p><strong>Valor-p:</strong> Avalia a significância estatística da correlação observada. Valores comuns para interpretar significância são:
-                    <ul>
-                        <li><strong>Valor-p &lt; 0,05:</strong> Indica que a correlação observada é estatisticamente significativa. Há uma baixa probabilidade de que a correlação seja devido ao acaso.</li>
-                        <li><strong>Valor-p ≥ 0,05:</strong> Sugere que a correlação pode ser resultado do acaso e não é considerada estatisticamente significativa.</li>
-                    </ul>
+                <p><strong>Valor-p:</strong> Avalia a significância estatística da correlação observada. Valores comuns
+                    para interpretar significância são:
+                <ul>
+                    <li><strong>Valor-p &lt; 0,05:</strong> Indica que a correlação observada é estatisticamente
+                        significativa. Há uma baixa probabilidade de que a correlação seja devido ao acaso.</li>
+                    <li><strong>Valor-p ≥ 0,05:</strong> Sugere que a correlação pode ser resultado do acaso e não é
+                        considerada estatisticamente significativa.</li>
+                </ul>
                 </p>
-                <p><strong>Coeficiente Angular (Slope):</strong> Representa a taxa de variação entre as variáveis. No contexto, ele mostra como o risco de fogo varia com a precipitação:
-                    <ul>
-                        <li><strong>Positivo:</strong> Risco de fogo aumenta com a precipitação.</li>
-                        <li><strong>Negativo:</strong> Risco de fogo diminui com o aumento da precipitação, o que pode sugerir que mais precipitação reduz o risco de fogo.</li>
-                        <li><strong>Zero:</strong> Não há relação linear entre a precipitação e o risco de fogo.</li>
-                    </ul>
+                <p><strong>Coeficiente Angular (Slope):</strong> Representa a taxa de variação entre as variáveis. No
+                    contexto, ele mostra como o risco de fogo varia com a precipitação:
+                <ul>
+                    <li><strong>Positivo:</strong> Risco de fogo aumenta com a precipitação.</li>
+                    <li><strong>Negativo:</strong> Risco de fogo diminui com o aumento da precipitação, o que pode
+                        sugerir que mais precipitação reduz o risco de fogo.</li>
+                    <li><strong>Zero:</strong> Não há relação linear entre a precipitação e o risco de fogo.</li>
+                </ul>
                 </p>
-                <p><strong>Intercepto:</strong> Valor esperado de risco de fogo quando a precipitação é zero. Serve como ponto de partida na previsão do risco de fogo:
-                    <ul>
-                        <li><strong>Positivo:</strong> Sugere que o risco de fogo ainda é presente mesmo sem precipitação.</li>
-                        <li><strong>Próximo de Zero:</strong> Indica que o risco de fogo é baixo ou nulo sem precipitação.</li>
-                    </ul>
+                <p><strong>Intercepto:</strong> Valor esperado de risco de fogo quando a precipitação é zero. Serve como
+                    ponto de partida na previsão do risco de fogo:
+                <ul>
+                    <li><strong>Positivo:</strong> Sugere que o risco de fogo ainda é presente mesmo sem precipitação.
+                    </li>
+                    <li><strong>Próximo de Zero:</strong> Indica que o risco de fogo é baixo ou nulo sem precipitação.
+                    </li>
+                </ul>
                 </p>
                 <p><strong>Equação da Reta:</strong> Fórmula da linha de regressão. No formato <em>y = mx + b</em>:
-                    <ul>
-                        <li><strong>y:</strong> Valor previsto de risco de fogo.</li>
-                        <li><strong>x:</strong> Precipitação observada.</li>
-                        <li><strong>m (slope):</strong> Coeficiente angular.</li>
-                        <li><strong>b (intercepto):</strong> Intercepto no eixo y.</li>
-                    </ul>
-                    A equação permite prever como o risco de fogo varia com a precipitação.
+                <ul>
+                    <li><strong>y:</strong> Valor previsto de risco de fogo.</li>
+                    <li><strong>x:</strong> Precipitação observada.</li>
+                    <li><strong>m (slope):</strong> Coeficiente angular.</li>
+                    <li><strong>b (intercepto):</strong> Intercepto no eixo y.</li>
+                </ul>
+                A equação permite prever como o risco de fogo varia com a precipitação.
                 </p>
-                <p><strong>Gráfico de Regressão Linear:</strong> Visualiza a relação entre precipitação e risco de fogo. Cada ponto azul representa dados observados de um município. A linha vermelha de regressão mostra a relação linear calculada entre precipitação e risco de fogo, indicando a direção e intensidade dessa relação.
+                <p><strong>Gráfico de Regressão Linear:</strong> Visualiza a relação entre precipitação e risco de fogo.
+                    Cada ponto azul representa dados observados de um município. A linha vermelha de regressão mostra a
+                    relação linear calculada entre precipitação e risco de fogo, indicando a direção e intensidade dessa
+                    relação.
                 </p>
             </div>
             <div class="modal-footer">
@@ -236,6 +419,19 @@
     function showSpinner() {
         document.getElementById('spinner').style.display = 'block';
         document.getElementById('a').style.display = 'none';
+    }
+
+    function showSection(sectionId) {
+        const sections = document.querySelectorAll('.data-section');
+        sections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            console.log(sectionId, selectedSection)
+            selectedSection.style.display = 'block';
+        }
     }
 </script>
 
