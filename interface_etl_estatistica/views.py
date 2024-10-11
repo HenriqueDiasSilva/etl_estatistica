@@ -103,6 +103,10 @@ def home(request):
                         spearman_regression_plot_all, spearman_equation_all = plot_regression(averaged_data, 'precipitacao', 'risco_fogo', 
                                                                                       'Regressão Linear entre Precipitação e Risco de Fogo (Todos os Dados)')
 
+                        # Formatar os valores de p_value e spearman_p_value em notação científica
+                        p_value = f"{p_value:.2e}"
+                        spearman_p_value = f"{spearman_p_value:.2e}"
+
                         # Gráfico com todos os dados
                         X = averaged_data['precipitacao'].values.reshape(-1, 1)
                         y = averaged_data['risco_fogo'].values
@@ -147,6 +151,10 @@ def home(request):
                             spearman_regression_plot_no_outliers, spearman_equation_no_outliers = plot_regression(
                                 averaged_data_no_outliers, 'precipitacao', 'risco_fogo', 
                                 'Regressão Linear entre Precipitação e Risco de Fogo (Sem Outliers)')
+                            
+                            # Formatar os valores de p_value e spearman_p_value em notação científica
+                            p_value_no_outliers = f"{p_value_no_outliers:.2e}"
+                            spearman_p_value_no_outliers = f"{spearman_p_value_no_outliers:.2e}"
 
                             X_no_outliers = averaged_data_no_outliers['precipitacao'].values.reshape(-1, 1)
                             y_no_outliers = averaged_data_no_outliers['risco_fogo'].values

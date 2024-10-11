@@ -3,7 +3,7 @@
 {% block title %}HydroFlame Analytics - Importação{% endblock %}
 
 {% block content %}
-<div>
+<section class="py-4">
     <form class="row align-items-center" method="post" action="{% url 'home' %}" enctype="multipart/form-data"
         onsubmit="showSpinner()">
         {% csrf_token %}
@@ -27,51 +27,52 @@
                 </div>
             </div>
     </form>
-</div>
+</section>
 
-
-{% if correlation %}
-<section class="row mt-3 py-4 border-top">
-    <h2 class="text-center">RESULTADOS</h2>
-    <div class="mt-3">
+<section class="row mt-5 py-4 border-top">
+    <h3 class="text-center">Resultados</h3>
+    {% if correlation %}
+    <div class="mt-3 m-0" style="text-align: center;">
         <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('pearson_all')"
-            style="height: 40px">
+            style="height: 40px; display: inline-block;">
             Pearson (Todos os dados)
         </button>
-
+    
         <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('pearson_no_outliers')"
-            style="height: 40px">
+            style="height: 40px; display: inline-block;">
             Pearson (Sem Outliers)
         </button>
-
+    
         <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('spearman_all')"
-            style="height: 40px">
+            style="height: 40px; display: inline-block;">
             Spearman (Todos os dados)
         </button>
-
+    
         <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('spearman_no_outliers')"
-            style="height: 40px">
+            style="height: 40px; display: inline-block;">
             Spearman (Sem Outliers)
         </button>
-
+    
         <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('both_all')"
-            style="height: 40px">
+            style="height: 40px; display: inline-block;">
             Ambos (Todos os dados)
         </button>
-
-        <button type="button" class="btn btn-secondary text-white me-2" onclick="showSection('both_no_outliers')"
-            style="height: 40px">
+    
+        <button type="button" class="btn btn-secondary text-white mt-2 me-2" onclick="showSection('both_no_outliers')"
+            style="height: 40px; display: inline-block;">
             Ambos (Sem Outliers)
         </button>
-
+    
         <button type="button" class="btn btn-info text-white mt-2 me-2" data-bs-toggle="modal"
-            data-bs-target="#infoModal" style="height: 40px">Explicação dos Itens
+            data-bs-target="#infoModal" style="height: 40px; display: inline-block;">
+            Explicação dos Itens
         </button>
-
+    
         <button type="button" class="btn btn-warning text-white mt-2 me-2" data-bs-toggle="modal"
-            data-bs-target="#outliersModal">Ver Outliers</button>
-    </div>
-    </div>
+            data-bs-target="#outliersModal" style="display: inline-block;">
+            Ver Outliers
+        </button>
+    </div>    
 
     <div id="pearson_all" class="data-section" style="display: none;">
         {% if correlation %}
@@ -227,21 +228,29 @@
             </div>
             <div class="col-6">
                 {% if spearman_corr %}
-                <ul class="list-group shadow-sm mt-4">
-                    <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
-                        <h3 class="flex-grow-1 text-center">Correlação de Spearman (Todos os Dados)</h3>
-                    </li>
-                    <li class="list-group-item">
-                        <p><strong>Correlação de Spearman:</strong> {{ spearman_corr }}</p>
-                    </li>
-                    <li class="list-group-item">
-                        <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value }}</p>
-                    </li>
-                </ul>
+                    <ul class="list-group shadow-sm mt-4">
+                        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                            <h3 class="flex-grow-1 text-center">Correlação de Spearman (Todos os Dados)</h3>
+                        </li>
+                        <li class="list-group-item">
+                            <p><strong>Correlação de Spearman:</strong> {{ spearman_corr }}</p>
+                        </li>
+                        <li class="list-group-item">
+                            <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value }}</p>
+                        </li>
+                        <li class="list-group-item">
+                            <p><strong>Equação da Reta:</strong> {{ spearman_equation_all }}</p>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-center">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <img src="data:image/png;base64,{{ spearman_regression_plot_all }}"
+                                    alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+                            </div>
+                        </li>
+                    </ul>
                 {% endif %}
             </div>
         </div>
-
     </div>
 
     <div id="both_no_outliers" class="data-section" style="display: none;">
@@ -272,25 +281,32 @@
             </div>
             <div class="col-6">
                 {% if spearman_corr_no_outliers %}
-                <ul class="list-group shadow-sm mt-4 mb-4">
-                    <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
-                        <h3 class="flex-grow-1 text-center">Correlação de Spearman (Sem Outliers)</h3>
-                    </li>
-                    <li class="list-group-item">
-                        <p><strong>Correlação de Spearman:</strong> {{ spearman_corr_no_outliers }}</p>
-                    </li>
-                    <li class="list-group-item">
-                        <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value_no_outliers }}
-                        </p>
-                    </li>
-                </ul>
+                    <ul class="list-group shadow-sm mt-4 mb-4">
+                        <li class="list-group-item d-flex justify-content-center border-bottom-0 pt-4">
+                            <h3 class="flex-grow-1 text-center">Correlação de Spearman (Sem Outliers)</h3>
+                        </li>
+                        <li class="list-group-item">
+                            <p><strong>Correlação de Spearman:</strong> {{ spearman_corr_no_outliers }}</p>
+                        </li>
+                        <li class="list-group-item">
+                            <p class="text-break"><strong>Valor-p de Spearman:</strong> {{ spearman_p_value_no_outliers }}</p>
+                        </li>
+                        <li class="list-group-item">
+                            <p><strong>Equação da Reta:</strong> {{ spearman_equation_no_outliers }}</p>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-center">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <img src="data:image/png;base64,{{ spearman_regression_plot_no_outliers }}"
+                                    alt="Gráfico de Regressão Linear Sem Outliers" class="img-fluid">
+                            </div>
+                        </li>
+                    </ul>
                 {% endif %}
             </div>
         </div>
-
     </div>
+    {% endif %}
 </section>
-{% endif %}
 
 <div class="modal fade" id="outliersModal" tabindex="-1" aria-labelledby="outliersModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
