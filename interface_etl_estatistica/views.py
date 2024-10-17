@@ -37,7 +37,7 @@ def plot_regression(df, x_column, y_column, title):
     plt.scatter(df[x_column], df[y_column], color='blue', label='Dados')
     plt.plot(df[x_column], model.predict(X), color='red', label=f'Linha de Tendência')
     plt.xlabel('Precipitação')
-    plt.ylabel('Risco de Fogo')
+    plt.ylabel('Risco de Queimadas')
     plt.title(title)
     plt.legend()
 
@@ -98,8 +98,10 @@ def home(request):
                         averaged_data = averaged_data.replace([np.inf, -np.inf], np.nan).dropna()
 
                         # Calcular a correlação de Pearson e Spearman para o conjunto total
-                        correlation, p_value = pearsonr(averaged_data['precipitacao'], averaged_data['risco_fogo'])
-                        spearman_corr, spearman_p_value = spearmanr(averaged_data['precipitacao'], averaged_data['risco_fogo'])
+                        correlation, p_value = pearsonr(averaged_data['precipitacao'], 
+                                                        averaged_data['risco_fogo'])
+                        spearman_corr, spearman_p_value = spearmanr(averaged_data['precipitacao'], 
+                                                                    averaged_data['risco_fogo'])
                         spearman_regression_plot_all, spearman_equation_all = plot_regression(averaged_data, 'precipitacao', 'risco_fogo', 
                                                                                       'Regressão Linear entre Precipitação e Risco de Fogo (Todos os Dados)')
 
@@ -108,20 +110,22 @@ def home(request):
                         spearman_p_value = f"{spearman_p_value:.2e}"
 
                         # Gráfico com todos os dados
-                        X = averaged_data['precipitacao'].values.reshape(-1, 1)
+                        x = averaged_data['precipitacao'].values.reshape(-1, 1)
                         y = averaged_data['risco_fogo'].values
                         model = LinearRegression()
-                        model.fit(X, y)
+                        model.fit(x, y)
                         slope = model.coef_[0]
                         intercept = model.intercept_
                         equation = f"y = {slope:.4f}x + {intercept:.4f}"
 
                         plt.figure()
-                        plt.scatter(averaged_data['precipitacao'], averaged_data['risco_fogo'], color='green', label='Dados')
-                        plt.plot(averaged_data['precipitacao'], model.predict(X), color='orange', label='Linha de Regressão')
+                        plt.scatter(averaged_data['precipitacao'], averaged_data['risco_fogo'],
+                                    color='green', label='Dados')
+                        plt.plot(averaged_data['precipitacao'], model.predict(x), 
+                                 color='orange', label='Linha de Regressão')
                         plt.xlabel('Precipitação')
-                        plt.ylabel('Risco de Fogo')
-                        plt.title('Regressão Linear entre Precipitação e Risco de Fogo (Todos os Dados)')
+                        plt.ylabel('Risco de Queimadas')
+                        plt.title('Regressão Linear entre Precipitação e Risco de Queimadas (Todos os Dados)')
                         plt.legend()
 
                         buffer = BytesIO()
@@ -150,7 +154,7 @@ def home(request):
                             )
                             spearman_regression_plot_no_outliers, spearman_equation_no_outliers = plot_regression(
                                 averaged_data_no_outliers, 'precipitacao', 'risco_fogo', 
-                                'Regressão Linear entre Precipitação e Risco de Fogo (Sem Outliers)')
+                                'Regressão Linear entre Precipitação e Risco de Queimadas (Sem Outliers)')
                             
                             # Formatar os valores de p_value e spearman_p_value em notação científica
                             p_value_no_outliers = f"{p_value_no_outliers:.2e}"
@@ -168,8 +172,8 @@ def home(request):
                             plt.scatter(averaged_data_no_outliers['precipitacao'], averaged_data_no_outliers['risco_fogo'], color='green', label='Dados')
                             plt.plot(averaged_data_no_outliers['precipitacao'], model_no_outliers.predict(X_no_outliers), color='orange', label='Linha de Regressão')
                             plt.xlabel('Precipitação')
-                            plt.ylabel('Risco de Fogo')
-                            plt.title('Regressão Linear entre Precipitação e Risco de Fogo (Sem Outliers)')
+                            plt.ylabel('Risco de Queimadas')
+                            plt.title('Regressão Linear entre Precipitação e Risco de Queimadas (Sem Outliers)')
                             plt.legend()
 
                             buffer_no_outliers = BytesIO()
